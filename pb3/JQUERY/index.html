@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Problema 3</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    </head>
+        
+    <body style="margin-left: 45%;">
+            <br>
+            <select id="select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <br><br>
+            Nume:<br> <input type="text" id="nume" name="nume"><br><br>
+            Prenume:<br> <input type="text" id="prenume" name="prenume"><br><br>
+            Telefon:<br> <input type="text" id="telefon" name="telefon"> <br><br>
+            Email:<br> <input type="email" id="email" name="email"><br><br>
+            <button id="button" disabled>Save</button>
+
+            <script>
+            
+                $(document).ready(function() {
+                    var modified = false;
+                    // if we select an id from combo box
+                    $("#select").on("change", function() {
+                        var idUser = $(this).val();
+                        $.ajax({
+                          url: "http://localhost/pb3php.php",
+                          data: {
+                            idUser: idUser
+                          },
+                          type: "GET",
+                          dataType: "json",
+                          success: function(response) {
+                            $("#nume").val(response[0].nume);
+                            $("#prenume").val(response[0].prenume);
+                            $("#telefon").val(response[0].telefon);
+                            $("#email").val(response[0].email);
+                            // Enable the Save button
+                            modified = false;
+                            $("#button").prop("disabled", true);
+                          },
+                          error: function(jqXHR, textStatus, errorThrown) {
+                            console.log(textStatus, errorThrown);
+                          }
+                        });
+                    });
+
+                    // if we change the value of an input field
+                    $("input").on("input", function() {
+                        modified = true;
+                        $("#button").prop("disabled", false);
+                    });
+
+                    // if we click on the save button
+                    $("#button").on("click", function() {
+                        if(confirm("Sunteti sigur ca doresti sa salvati modificarile?")) {
+                            $.ajax({
+                            url: "http://localhost/pb3-put-method.php",
+                            contentType: "application/json",
+                            data: JSON.stringify({
+                                idUser: $("#select").val(),
+                                nume: $("#nume").val(),
+                                prenume: $("#prenume").val(),
+                                telefon: $("#telefon").val(),
+                                email: $("#email").val()
+                            }),
+                            type: "POST",
+                            success: function(response) {
+                                $("#button").prop("disabled", true);
+                                alert("Data saved successfully.");
+                            },
+                            error: function(jqXHR, textStatus, errorThrown) {
+                                console.log(textStatus, errorThrown);
+                            }
+                        });
+                        }
+                        else {
+                            $("#button").prop("disabled", true);
+                            $("#nume").val("");
+                            $("#prenume").val("");
+                            $("#telefon").val("");
+                            $("#email").val("");
+                        }                        
+                    });
+                });
+            </script>
+    </body>
+</html>

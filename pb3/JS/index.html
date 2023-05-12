@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Problema 3</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+        
+    <body style="margin-left: 45%;">
+            <br>
+            <select id="select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <br><br>
+            Nume:<br> <input type="text" id="nume" name="nume"><br><br>
+            Prenume:<br> <input type="text" id="prenume" name="prenume"><br><br>
+            Telefon:<br> <input type="text" id="telefon" name="telefon"> <br><br>
+            Email:<br> <input type="email" id="email" name="email"><br><br>
+            <button id="button" disabled>Save</button>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    var modified = false;
+            
+                    // if we select an id from combo box
+                    var select = document.querySelector("#select");
+                    select.addEventListener("change", function() {
+                        var idUser = this.value;
+                        var xhr = new XMLHttpRequest();
+                        xhr.onreadystatechange = function() {
+                            if (xhr.readyState === XMLHttpRequest.DONE) {
+                                if (xhr.status === 200) {
+                                    var response = JSON.parse(xhr.responseText);
+                                    document.querySelector("#nume").value = response[0].nume;
+                                    document.querySelector("#prenume").value = response[0].prenume;
+                                    document.querySelector("#telefon").value = response[0].telefon;
+                                    document.querySelector("#email").value = response[0].email;
+                                    // Enable the Save button
+                                    modified = false;
+                                    document.querySelector("#button").disabled = true;
+                                } else {
+                                    console.log("Error: " + xhr.status);
+                                }
+                            }
+                        };
+                        xhr.open("GET", "http://localhost/pb3php.php?idUser=" + idUser, true);
+                        xhr.send();
+                    });
+            
+                    // if we change the value of an input field
+                    var inputs = document.querySelectorAll("input");
+                    inputs.forEach(function(input) {
+                        input.addEventListener("input", function() {
+                            modified = true;
+                            document.querySelector("#button").disabled = false;
+                        });
+                    });
+            
+                    // if we click on the save button
+                    var button = document.querySelector("#button");
+                    button.addEventListener("click", function() {
+                        if (confirm("Sunteti sigur ca doresti sa salvati modificarile?")) {
+                            var xhr = new XMLHttpRequest();
+                            xhr.onreadystatechange = function() {
+                                if (xhr.readyState === XMLHttpRequest.DONE) {
+                                    if (xhr.status === 200) {
+                                        document.querySelector("#button").disabled = true;
+                                        alert("Data saved successfully.");
+                                    } else {
+                                        console.log("Error: " + xhr.status);
+                                    }
+                                }
+                            };
+                            xhr.open("POST", "http://localhost/pb3-put-method.php", true);
+                            xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                            xhr.send(JSON.stringify({
+                                idUser: document.querySelector("#select").value,
+                                nume: document.querySelector("#nume").value,
+                                prenume: document.querySelector("#prenume").value,
+                                telefon: document.querySelector("#telefon").value,
+                                email: document.querySelector("#email").value
+                            }));
+                        } else {
+                            document.querySelector("#button").disabled = true;
+                            document.querySelector("#nume").value = "";
+                            document.querySelector("#prenume").value = "";
+                            document.querySelector("#telefon").value = "";
+                            document.querySelector("#email").value = "";
+                        }
+                    });
+                });
+            </script>
+            
+    </body>
+</html>

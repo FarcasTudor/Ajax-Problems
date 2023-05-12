@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Problema 1</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    </head>
+    <body style="text-align: center;">
+        <fieldset style="width: 50px; width: 10%; margin: 0 auto; margin-top: 17%;">
+            <legend>Departure</legend>
+            <select id="departure" onchange="showRoutes(this.value)">
+                <option value="Bucuresti">Bucuresti</option>
+                <option value="Iasi">Iasi</option>
+                <option value="Cluj-Napoca">Cluj-Napoca</option>
+                <option value="Suceava">Suceava</option>
+                <option value="Arad">Arad</option>
+            </select>
+        </fieldset>
+
+        <fieldset style="width: 100px; width: 10%; margin: 0 auto; display: flex; justify-content: center; align-items: center;">
+            <legend>Arrival</legend>
+            <table id="arrival">
+
+            </table>
+        </fieldset>
+        
+        
+       
+        <script>
+            function showRoutes(str) {
+                if(str === "") {
+                    $("#arrival").empty();
+                    return;
+                }
+                $.ajax({
+                    url: "http://localhost/p1php.php?departure=" + str,
+                    type: "GET",
+                    success: function(response) {
+                        $("#arrival").html(response);
+                    },
+                    error: function() {
+                        alert("Error");
+                    }
+                });
+        }
+        </script>
+    </body>
+</html>

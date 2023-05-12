@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Problema 2</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>
+            table, th, td {
+                border: 1px solid black;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 style="align-items: center; justify-content: center; display: flex;">Students</h1>
+    <table id="students" align="center">
+        <thead>
+            <tr>
+                <th>Nume</th>
+                <th>Prenume</th>
+                <th>Telefon</th>
+                <th>Email</th>
+            </tr>
+        </thead>
+        <tbody id="students-body" style="text-align: center;"></tbody>
+    </table>
+    <br><br>
+    <div style="position: absolute;bottom:70%; left: 47%;">
+        <button id="prev-btn" onclick="prevPage()">Prev</button>
+        <button id="next-btn"onclick="nextPage()">Next</button>
+    </div>
+        <script>
+            var currentPage = 0;
+            var pageSize = 3;
+            var students = [];
+            
+            function showStudents() {
+                var table = document.getElementById("students-body");
+                table.innerHTML = "";
+            
+                var startIndex = currentPage * pageSize;
+                var endIndex = startIndex + pageSize;
+                var pageStudents = students.slice(startIndex, endIndex);
+            
+                for (var i = 0; i < pageStudents.length; i++) {
+                    var student = pageStudents[i];
+                    var row = table.insertRow(i);
+                    var nume = row.insertCell(0);
+                    var prenume = row.insertCell(1);
+                    var telefon = row.insertCell(2);
+                    var email = row.insertCell(3);
+                
+                    nume.innerHTML = student.Nume;
+                    prenume.innerHTML = student.Prenume;
+                    telefon.innerHTML = student.Telefon;
+                    email.innerHTML = student.Email;
+                }
+                var prevBtn = document.getElementById("prev-btn");
+                if (currentPage == 0) {
+                    prevBtn.disabled = true;
+                } else {
+                    prevBtn.disabled = false;
+                }
+
+                var maxPage = Math.floor((students.length - 1) / pageSize);
+                var nextBtn = document.getElementById("next-btn");
+                if (currentPage == maxPage) {
+                    nextBtn.disabled = true;
+                } else {
+                    nextBtn.disabled = false;
+                }
+            }
+
+            
+
+            function prevPage() {
+                if (currentPage > 0) {
+                currentPage--;
+                showStudents();
+                }
+            }
+        
+            function nextPage() {
+                var maxPage = Math.floor((students.length - 1) / pageSize);
+                if (currentPage < maxPage) {
+                    currentPage++;
+                    showStudents();
+                }
+            }
+
+            function loadStudents() {
+                var xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+                    if (this.readyState == 4 && this.status == 200) {
+                        students = JSON.parse(this.responseText);
+                        showStudents();
+                    }
+                };
+                xhttp.open("GET", "http://localhost/pb2php.php", true);
+                xhttp.send();
+            }
+        
+            window.onload = function() {
+                loadStudents();
+            };
+        </script>
+    </body>
+</html>

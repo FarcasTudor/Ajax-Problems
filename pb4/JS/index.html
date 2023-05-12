@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Problema 4</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+	<style>
+		table {
+			border-collapse: collapse;
+			margin: 50px auto;
+		}
+		td {
+			width: 100px;
+			height: 100px;
+			text-align: center;
+			font-size: 72px;
+			font-weight: bold;
+			border: 2px solid black;
+			cursor: pointer;
+		}
+		td:hover {
+			background-color: #f2f2f2;
+		}
+	</style>
+</head>
+<body>
+	<table>
+		<tr>
+			<td id="0"></td>
+			<td id="1"></td>
+			<td id="2"></td>
+		</tr>
+		<tr>
+			<td id="3"></td>
+			<td id="4"></td>
+			<td id="5"></td>
+		</tr>
+		<tr>
+			<td id="6"></td>
+			<td id="7"></td>
+			<td id="8"></td>
+		</tr>
+	</table>
+	<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var turn = 0;
+            var gameOver = false;
+            var clickable = true;
+            // display message indicating whose turn it is
+            var messageEl = document.createElement("p");
+            messageEl.style.fontWeight = "bold";
+            var tableEl = document.querySelector("table");
+            tableEl.parentNode.insertBefore(messageEl, tableEl.nextSibling);
+            if(gameOver === false) {
+                displayMessage();
+            }
+            // add event listeners to each cell in the table
+            var cells = document.querySelectorAll("td");
+            cells.forEach(function(cell) {
+                cell.addEventListener("click", function() {
+                    if (!gameOver && clickable && !cell.textContent) {
+                        // update cell with current player's symbol
+                        cell.textContent = turn === 0 ? "X" : "O";
+                        cell.style.backgroundColor = "#f2f2f2";
+                        checkForWin();
+                    
+                        // switch to other player's turn
+                        turn = 1 - turn;
+                        if(gameOver === false) {
+                            displayMessage();
+                        }
+                    
+                        // call server-side script to make the computer's move
+                        if (!gameOver && turn === 1) {
+                            clickable = false;
+                            makeComputerMove();
+                        }
+                    }
+                });
+            });
+        
+            function displayMessage() {
+                messageEl.textContent = turn === 0 ? "Your turn (X)" : "Computer's turn (O)";
+            }
+        
+            function checkForWin() {
+                var lines = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]];
+                var winner = null;
+                lines.forEach(function(line) {
+                    if (cells[line[0]].textContent &&
+                        cells[line[0]].textContent === cells[line[1]].textContent &&
+                        cells[line[1]].textContent === cells[line[2]].textContent) {
+                            gameOver = true;
+                            winner = cells[line[0]].textContent;
+                            line.forEach(function(i) {
+                                cells[i].style.backgroundColor = "#4fff4f";
+                            });
+                        }
+                });
+
+                var board = getBoard();
+                checkForWinServer(board);
+            
+            }
+
+            function makeComputerMove() {
+                setTimeout(function() {
+                    var board = getBoard();
+                    makeComputerMoveServer(board);
+                }, 1000);
+            }
+
+            function checkForWinServer(board) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "http://localhost/pb4-check-winner.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        var response = xhr.responseText;
+                        console.log(response);
+                        if (response.includes("wins")) {
+                            gameOver = true;
+                            messageEl.textContent = response;
+                        } else if (response === "It's a draw!") {
+                            gameOver = true;
+                            messageEl.textContent = response;
+                            cells.forEach(function(cell) {
+                                cell.style.backgroundColor = "#ff2b36";
+                            });
+                        }
+                    }
+                };
+                xhr.send("board=" + encodeURIComponent(board));
+            }
+
+        
+            function makeComputerMoveServer(board) {
+                var xhr = new XMLHttpRequest();
+                xhr.open("POST", "http://localhost/pb4php.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+                        var response = xhr.responseText;
+                        if (response === "Game over") {
+                            gameOver = true;
+                            messageEl.textContent = "Game over";
+                            return;
+                        }
+                        var index = parseInt(response);
+                        var cell = cells[index];
+                        cell.textContent = "O";
+                        cell.style.backgroundColor = "#f2f2f2";
+                        checkForWin();
+                        turn = 1 - turn;
+                        if (gameOver === false) {
+                            displayMessage();
+                        }
+                        clickable = true;                        
+                    }
+                };
+
+                xhr.send("board=" + encodeURIComponent(board));           
+            }
+
+            function getBoard() {
+                var board = "";
+                cells.forEach(function(cell) {
+                    board += cell.textContent || "-";
+                });
+                return board;
+            }
+        });
+
+
+    </script>
+</body>
+</html>
